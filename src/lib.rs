@@ -41,6 +41,7 @@ extern crate alloc;
 #[cfg(feature = "alloc")]
 use alloc::sync::Arc;
 
+use quic::chacha20::QuicChacha20;
 use rustls::crypto::{
     CipherSuiteCommon, CryptoProvider, GetRandomFailed, KeyProvider, SecureRandom,
 };
@@ -242,7 +243,7 @@ pub const TLS13_CHACHA20_POLY1305_SHA256: SupportedCipherSuite =
         },
         hkdf_provider: &rustls::crypto::tls13::HkdfUsingHmac(hmac::SHA256),
         aead_alg: &aead::chacha20::Chacha20Poly1305,
-        quic: None,
+        quic: Some(&QuicChacha20),
     });
 
 const TLS13_SUITES: &[SupportedCipherSuite] = misc::const_concat_slices!(
