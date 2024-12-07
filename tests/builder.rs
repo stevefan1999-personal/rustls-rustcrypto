@@ -8,6 +8,7 @@ use quinn::Endpoint;
 use quinn::EndpointConfig;
 use quinn::ServerConfig;
 use quinn::TokioRuntime;
+use rand::RngCore;
 use rustls::quic::Suite;
 use rustls::ClientConfig as RusTlsClientConfig;
 use rustls::RootCertStore;
@@ -108,12 +109,13 @@ async fn test_quic() {
     let server = tokio::spawn({
         let cert_der = cert_der.clone();
         async move {
-            let provider = rustcrypto_provider();
-            let crypto = RusTlsServerConfig::builder_with_provider(provider.into())
-                .with_protocol_versions(&[&rustls::version::TLS13])
-                .unwrap()
+            // let provider = rustcrypto_provider();
+            let crypto = RusTlsServerConfig::builder()
+                // .with_protocol_versions(&[&rustls::version::TLS13])
+                // .unwrap()
                 .with_no_client_auth()
-                .with_single_cert(vec![cert_der.clone()], priv_key.into())?;
+                .with_single_cert(vec![cert_der.clone()], priv_key.into())
+                .unwrap();
             let quic_server_config = QuicServerConfig::with_initial(
                 Arc::new(crypto),
                 Suite {
@@ -130,8 +132,7 @@ async fn test_quic() {
                 let master_key =
                     ring::hkdf::Salt::new(ring::hkdf::HKDF_SHA256, &[]).extract(&master_key);
                 Arc::new(master_key)
-            })
-            .unwrap();
+            });
             let transport_config = Arc::get_mut(&mut server_config.transport).unwrap();
             transport_config.max_concurrent_uni_streams(0_u8.into());
             let runtime = Arc::new(TokioRuntime);

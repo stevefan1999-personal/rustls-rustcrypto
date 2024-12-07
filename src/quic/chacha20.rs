@@ -2,7 +2,11 @@
 use alloc::boxed::Box;
 
 use aead::AeadCore;
-use chacha20::{cipher::StreamCipher, ChaCha20};
+use alloc::string::ToString;
+use chacha20::{
+    cipher::{StreamCipher, StreamCipherSeek},
+    ChaCha20,
+};
 use chacha20poly1305::{AeadInPlace, ChaCha20Poly1305, KeyInit, KeySizeUser, Nonce};
 use crypto_common::{typenum::Unsigned, KeyIvInit};
 use rustls::{
@@ -77,11 +81,11 @@ impl PacketKey for QuicChacha20PacketKey {
     }
 
     fn confidentiality_limit(&self) -> u64 {
-        1 << 36
+        u64::MAX
     }
 
     fn integrity_limit(&self) -> u64 {
-        u64::MAX
+        1 << 52
     }
 }
 
@@ -95,10 +99,28 @@ impl QuicChacha20HeaderProtectionKey {
         packet_number: &mut [u8],
         masked: bool,
     ) -> Result<(), Error> {
+        let mut sample = sample.to_vec();
         let mut mask: [u8; 5] = [0; 5];
-        let iv = Nonce::from_slice(sample);
 
-        let mut cipher = ChaCha20::new_from_slices(self.0.as_ref(), iv).unwrap();
+        // https://datatracker.ietf.org/doc/html/draft-ietf-quic-tls-18#section-5.4.4
+        // The first 4 bytes of the sampled ciphertext are interpreted as a
+        // 32-bit number in little-endian order and are used as the block count.
+        // The remaining 12 bytes are interpreted as three concatenated 32-bit
+        // numbers in little-endian order and used as the nonce.
+        let (counter, nonce) = sample.split_at_mut(4);
+        let counter = u32::from_le_bytes(
+            counter
+                .try_into()
+                .map_err(|_| Error::General("Counter size incorrect".into()))?,
+        );
+        // let (_, foo, _) = unsafe { nonce.align_to_mut::<u32>() };
+        // for x in foo {
+        //     *x = x.swap_bytes();
+        // }
+        let nonce = Nonce::from_slice(nonce);
+
+        let mut cipher = ChaCha20::new_from_slices(self.0.as_ref(), nonce).unwrap();
+        cipher.seek(counter);
         cipher.apply_keystream(&mut mask);
 
         let (first_mask, pn_mask) = mask.split_first().unwrap();
@@ -107,20 +129,20 @@ impl QuicChacha20HeaderProtectionKey {
         }
 
         const LONG_HEADER_FORM: u8 = 0x80;
-        let bits = match *first & LONG_HEADER_FORM == LONG_HEADER_FORM {
-            true => 0x0f,  // Long header: 4 bits masked
-            false => 0x1f, // Short header: 5 bits masked
+        let bits = if (*first & LONG_HEADER_FORM) == LONG_HEADER_FORM {
+            // Long header: 4 bits masked
+            0x0f
+        } else {
+            // Short header: 5 bits masked
+            0x1f
         };
 
-        let first_plain = match masked {
-            // When unmasking, use the packet length bits after unmasking
-            true => *first ^ (first_mask & bits),
-            // When masking, use the packet length bits before masking
-            false => *first,
-        };
+        let foo = first_mask & bits;
+
+        let first_plain = *first ^ if masked { foo } else { 0 };
         let pn_len = (first_plain & 0x03) as usize + 1;
 
-        *first ^= first_mask & bits;
+        *first ^= foo;
         for (dst, m) in packet_number.iter_mut().zip(pn_mask).take(pn_len) {
             *dst ^= m;
         }

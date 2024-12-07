@@ -32,11 +32,11 @@ p256 = { version = "0.13.2", default-features = false, features = ["pem", "ecdsa
 p384 = { version = "0.13.0", default-features = false, features = ["pem", "ecdsa", "ecdh"] }
 paste = { version = "1.0.15", default-features = false }
 pkcs8 = { version = "0.10.2", default-features = false, features = ["pem", "pkcs5"] }
-pki-types = { package = "rustls-pki-types", version = "1.8.0", default-features = false }
-quinn = { version = "0.11.5", default-features = false, features = ["runtime-tokio", "rustls"] }
+pki-types = { package = "rustls-pki-types", version = "1.10.0", default-features = false }
+quinn = { version = "0.11.6", default-features = false, features = ["runtime-tokio", "rustls"] }
 rand_core = { version = "0.6.4", default-features = false, features = ["getrandom"] }
-rsa = { version = "0.9.6", default-features = false, features = ["sha2"] }
-rustls = { version = "0.23.13", default-features = false }
+rsa = { version = "0.9.7", default-features = false, features = ["sha2"] }
+rustls = { version = "0.23.19", default-features = false }
 sec1 = { version = "0.7.3", default-features = false, features = ["pkcs8", "pem"] }
 sha2 = { version = "0.10.8", default-features = false }
 signature = { version = "2.2.0", default-features = false }
@@ -45,9 +45,11 @@ x25519-dalek = { version = "2", default-features = false }
 
 [dev-dependencies]
 getrandom = { version = "0.2", features = ["custom"] } # workaround to build on no_std targets
+rand = "0.8.5"
 rcgen = "0.13.1"
-socket2 = "0.5.7"
-tokio = { version = "1.40.0", features = ["macros", "rt-multi-thread", "net"] }
+ring = "0.17.8"
+socket2 = "0.5.8"
+tokio = { version = "1.42.0", features = ["macros", "rt-multi-thread", "net"] }
 
 [features]
 default = ["std", "tls12", "zeroize"]
