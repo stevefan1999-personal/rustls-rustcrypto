@@ -86,7 +86,6 @@ mod test {
     }
 
     #[test]
-    #[should_panic] // OpenSSL/rustls still do not negotiate TLS_AES_128_CCM_8_SHA256 here
     fn vs_openssl_as_client_ccm8_sha256() {
         let cipher_suites = OpenSslCipherSuites {
             TLS_AES_128_GCM_SHA256: false,
