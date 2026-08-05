@@ -75,6 +75,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "ccm"
+version = "0.6.0-rc.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4edea5ea70a1285565ac264767613d6c88351a9a0557e7af793a0942590baaed"
+dependencies = [
+ "aead",
+ "cipher",
+ "ctr",
+ "subtle",
+]
+
+[[package]]
 name = "cfg-if"
 version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -656,7 +668,9 @@ name = "rustls-rustcrypto"
 version = "0.0.2-alpha"
 dependencies = [
  "aead",
+ "aes",
  "aes-gcm",
+ "ccm",
  "chacha20poly1305",
  "crypto-common",
  "der",
