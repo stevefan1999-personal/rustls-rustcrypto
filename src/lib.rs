@@ -274,7 +274,7 @@ pub const TLS13_AES_128_GCM_SHA256: SupportedCipherSuite =
         },
         hkdf_provider: &rustls::crypto::tls13::HkdfUsingHmac(hmac::SHA256),
         aead_alg: &aead::gcm::Tls13Aes128Gcm,
-        quic: None,
+        quic: Some(quic::AES_128_GCM),
     });
 
 pub const TLS13_AES_256_GCM_SHA384: SupportedCipherSuite =
@@ -286,7 +286,7 @@ pub const TLS13_AES_256_GCM_SHA384: SupportedCipherSuite =
         },
         hkdf_provider: &rustls::crypto::tls13::HkdfUsingHmac(hmac::SHA384),
         aead_alg: &aead::gcm::Tls13Aes256Gcm,
-        quic: None,
+        quic: Some(quic::AES_256_GCM),
     });
 
 pub const TLS13_AES_128_CCM_SHA256: SupportedCipherSuite =
@@ -298,7 +298,7 @@ pub const TLS13_AES_128_CCM_SHA256: SupportedCipherSuite =
         },
         hkdf_provider: &rustls::crypto::tls13::HkdfUsingHmac(hmac::SHA256),
         aead_alg: &aead::ccm::Tls13Aes128Ccm,
-        quic: None,
+        quic: Some(quic::AES_128_CCM),
     });
 
 pub const TLS13_AES_128_CCM_8_SHA256: SupportedCipherSuite =
@@ -330,7 +330,7 @@ pub const TLS13_CHACHA20_POLY1305_SHA256: SupportedCipherSuite =
         },
         hkdf_provider: &rustls::crypto::tls13::HkdfUsingHmac(hmac::SHA256),
         aead_alg: &aead::chacha20::Chacha20Poly1305,
-        quic: None,
+        quic: Some(quic::CHACHA20_POLY1305),
     });
 
 const TLS13_SUITES: &[SupportedCipherSuite] = misc::const_concat_slices!(
@@ -350,8 +350,10 @@ static ALL_CIPHER_SUITES: &[SupportedCipherSuite] = misc::const_concat_slices!(
 );
 
 mod aead;
-mod hash;
-mod hmac;
+/// Hash algorithm providers (SHA-224/256/384/512).
+pub mod hash;
+/// HMAC providers (SHA-256/384/512).
+pub mod hmac;
 mod kx;
 mod misc;
 pub mod quic;

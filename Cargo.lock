@@ -731,6 +731,7 @@ dependencies = [
  "aes",
  "aes-gcm",
  "ccm",
+ "chacha20",
  "chacha20poly1305",
  "crypto-common",
  "der",
