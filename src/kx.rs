@@ -75,7 +75,12 @@ impl crypto::ActiveKeyExchange for X448KeyExchange {
     fn complete(self: Box<X448KeyExchange>, peer: &[u8]) -> Result<SharedSecret, rustls::Error> {
         let peer_pub = x448::PublicKey::from_bytes(peer)
             .ok_or_else(|| rustls::Error::from(rustls::PeerMisbehaved::InvalidKeyShare))?;
-        Ok(self.priv_key.diffie_hellman(&peer_pub).as_bytes().as_slice().into())
+        Ok(self
+            .priv_key
+            .diffie_hellman(&peer_pub)
+            .as_bytes()
+            .as_slice()
+            .into())
     }
 
     fn pub_key(&self) -> &[u8] {
