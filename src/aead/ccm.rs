@@ -6,8 +6,8 @@ use super::{DecryptBufferAdapter, EncryptBufferAdapter};
 use aead::AeadInOut;
 use aes::{Aes128, Aes256};
 use ccm::{
+    consts::{U12, U16, U8},
     Ccm,
-    consts::{U8, U12, U16},
 };
 use crypto_common::{KeyInit, KeySizeUser};
 use paste::paste;
